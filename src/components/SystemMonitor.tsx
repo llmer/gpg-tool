@@ -1,55 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Shield, RotateCcw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
-interface NetworkMetrics {
-  packets: {
-    sent: number;
-    received: number;
-  };
-}
+import { NetworkChart } from './monitoring/NetworkChart';
+import { DomainList } from './monitoring/DomainList';
+import { useNetworkMonitor } from '@/hooks/use-network-monitor';
 
 export function SystemMonitor() {
-  const [metrics, setMetrics] = useState<NetworkMetrics>({
-    packets: { sent: 0, received: 0 },
-  });
   const [isExpanded, setIsExpanded] = useState(false);
-  const [hasActivity, setHasActivity] = useState(false);
+  const { metrics, hasActivity, reset } = useNetworkMonitor();
 
-  useEffect(() => {
-    const observer = new PerformanceObserver((list) => {
-      const entries = list.getEntries() as PerformanceResourceTiming[];
-      
-      if (entries.length > 0) {
-        setHasActivity(true);
-      }
-      
-      setMetrics((prev) => ({
-        packets: {
-          sent: prev.packets.sent + entries.length,
-          received: prev.packets.received + entries.length,
-        },
-      }));
+  const formatTime = (time: number) => {
+    return new Date(time).toLocaleTimeString('en-US', { 
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
     });
-
-    observer.observe({ 
-      entryTypes: ['resource'],
-      buffered: true
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  const handleReset = () => {
-    setMetrics({
-      packets: { sent: 0, received: 0 },
-    });
-    setHasActivity(false);
   };
+
+  const sortedDomains = Array.from(metrics.domains.entries())
+    .sort((a, b) => b[1].packets - a[1].packets);
 
   return (
     <Card className={cn(
@@ -58,7 +30,6 @@ export function SystemMonitor() {
       "shadow-[0_0_0_1px_rgba(var(--primary),0.1),0_1px_2px_rgba(var(--primary),0.1)]",
       "hover:shadow-[0_0_0_1px_rgba(var(--primary),0.2),0_1px_3px_rgba(var(--primary),0.2)]",
       isExpanded ? "h-auto" : "h-10 overflow-hidden",
-      // Container-aligned positioning
       "left-[max(1rem,calc((100%-80rem)/2+1rem))]",
       "max-w-[calc(100%-2rem)]"
     )}>
@@ -93,7 +64,7 @@ export function SystemMonitor() {
               className="h-8 px-2 text-muted-foreground hover:text-foreground"
               onClick={(e) => {
                 e.stopPropagation();
-                handleReset();
+                reset();
               }}
             >
               <RotateCcw className="w-4 h-4 mr-1" />
@@ -101,22 +72,16 @@ export function SystemMonitor() {
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <div className="text-xl font-mono flex items-center space-x-1">
-                <span>↑</span>
-                <span>{metrics.packets.sent}</span>
-              </div>
-              <div className="text-xs text-muted-foreground">TX Packets</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-xl font-mono flex items-center space-x-1">
-                <span>↓</span>
-                <span>{metrics.packets.received}</span>
-              </div>
-              <div className="text-xs text-muted-foreground">RX Packets</div>
-            </div>
-          </div>
+          <NetworkChart 
+            domains={sortedDomains}
+            formatTime={formatTime}
+          />
+
+          <DomainList 
+            domains={sortedDomains}
+            txPackets={metrics.packets.sent}
+            rxPackets={metrics.packets.received}
+          />
 
           <p className="text-xs text-center text-muted-foreground/75">
             All encryption is performed locally

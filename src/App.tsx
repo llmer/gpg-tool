@@ -3,8 +3,9 @@ import { FileEncryptor } from '@/components/FileEncryptor';
 import { KeyManager } from '@/components/KeyManager';
 import { MessageSigner } from '@/components/MessageSigner';
 import { SystemMonitor } from '@/components/SystemMonitor';
+import { FAQ } from '@/components/FAQ';
 import { Toaster } from '@/components/ui/toaster';
-import { Github, ShieldEllipsis } from 'lucide-react';
+import { Github, ShieldEllipsis, HelpCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { loadKeyPair } from '@/lib/keys';
@@ -25,21 +26,23 @@ export function App() {
                 GPG Tool
               </h1>
             </div>
-            <a
-              href="https://github.com/llmer"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
-              <Github className="w-5 h-5" />
-            </a>
+            <div className="flex items-center space-x-4">
+              <a
+                href="https://github.com/llmer/gpg-tool"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Github className="w-5 h-5" />
+              </a>
+            </div>
           </div>
         </header>
 
         <main className="flex-1 container max-w-2xl mx-auto px-4 py-8">
           <Card className="w-full backdrop-blur-sm bg-card/50 border-border/20">
             <Tabs defaultValue="encrypt" className="w-full">
-              <TabsList className="w-full grid grid-cols-3 sticky top-[73px] z-10 bg-background/50 backdrop-blur-sm rounded-t-lg">
+              <TabsList className="w-full grid grid-cols-4 sticky top-[73px] z-10 bg-background/50 backdrop-blur-sm rounded-t-lg">
                 <TabsTrigger 
                   value="encrypt" 
                   className="relative py-3 data-[state=active]:bg-background/50 data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:rounded-none transition-colors group border-b border-border/20"
@@ -63,6 +66,16 @@ export function App() {
                   <span className="relative z-10 font-medium">Message Signing</span>
                   <span className="absolute inset-x-0 bottom-[-1px] h-[2px] bg-gradient-to-r from-primary/80 via-primary to-primary/80 scale-x-0 transition-transform duration-200 group-data-[state=active]:scale-x-100" />
                 </TabsTrigger>
+                <TabsTrigger 
+                  value="faq"
+                  className="relative py-3 data-[state=active]:bg-background/50 data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:rounded-none transition-colors group border-b border-border/20"
+                >
+                  <span className="relative z-10 flex items-center space-x-1">
+                    <HelpCircle className="w-4 h-4" />
+                    <span>FAQ</span>
+                  </span>
+                  <span className="absolute inset-x-0 bottom-[-1px] h-[2px] bg-gradient-to-r from-primary/80 via-primary to-primary/80 scale-x-0 transition-transform duration-200 group-data-[state=active]:scale-x-100" />
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="encrypt" className="mt-0">
                 <FileEncryptor />
@@ -72,6 +85,9 @@ export function App() {
               </TabsContent>
               <TabsContent value="sign" className="mt-0">
                 <MessageSigner />
+              </TabsContent>
+              <TabsContent value="faq" className="mt-0">
+                <FAQ />
               </TabsContent>
             </Tabs>
           </Card>
